@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Three Second Button</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
+
+</head>
+<body>
+
+<div class="container m-4">
+    <h1>Can you hit this button in <b>EXACTLY</b> 3 seconds?</h1>
+    <button class="btn btn-primary" id="challenge">Start</button>
+
+    <button id="toggle-chart-btn" class="btn btn-secondary">Toggle Charts</button>
+    <small id="indicator">How close will you be?</small>
+
+    <div id="info">
+        <p id="infoText">See your attempts here!</p>
+    </div>
+    <div id="records" style="height: 250px;"></div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+<script
+        src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
+
+
+
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        //The constant
+        const TIME_CHALLENGE = 3;
+
+        let records = [];
+        let attemptNum = 0;
+
+        let chart = null;
+        let average = 0;
+
+        $('#records').toggle();
+        $('#info').toggle();
+
+        $("#challenge").on("click", function (event) {
+            if ($(this).text() === 'Start') {
+                start = new Date().getTime();
+                $(this).text('Stop');
+            } else {
+                $(this).text('Start');
+                let elapsedTime = (new Date().getTime() - start) / 1000;
+                console.log(elapsedTime);
+
+                difference = Math.abs(TIME_CHALLENGE - elapsedTime);
+
+                let indicator = $('#indicator')
+                let result;
+                indicator.removeClass('text-success');
+                indicator.removeClass('text-info');
+                indicator.removeClass('text-warning');
+                indicator.removeClass('text-danger');
+
+
+                if (difference <= 0.05){
+                    //For the sake of being fair, it is 0.05, since that is reasonably
+                    //close enough while still being challenging.
+                    result = 'text-success';
+                    indicator.text("Perfect!");
+                } else if (difference <= 0.2) {
+                    result = 'text-info';
+                    indicator.text("Almost perfect!");
+
+                } else if (difference <= 0.5) {
+                    result = 'text-warning';
+                    indicator.text("Almost!");
+                } else {
+                    result = 'text-danger';
+                    indicator.text("Not close!");
+                }
+                indicator.addClass(result);
+
+                attemptNum++;
+
+                records.push({attempt: attemptNum, time: elapsedTime})
+                average = 0;
+                for(i = 0; i < records.length; i++){
+                    average += records[i];
+                    average = average / records.length;
+                }
+                updateInfo();
+                updateChart();
+
+            }
+
+            console.log("--------------");
+
+
+
+        })
+
+        $('#toggle-chart-btn').click(function(){
+            $('#records').toggle();
+            $('#info').toggle();
+        });
+
+        function updateInfo(){
+            //$('#info').innerHTML =
+            let sum = 0;
+            let min = Infinity;
+            let max = -Infinity;
+            records.forEach(function(attempt) {
+                sum += attempt.time;
+                min = Math.min(min, attempt.time);
+                max = Math.max(max, attempt.time);
+            });
+            let average = sum / attemptNum;
+
+            //console.log(sum);
+            //console.log(min);
+            //console.log(max);
+
+            $('#infoText').text("Total Attempts: " + attemptNum + ", Average Time: " + average + ", Min: " + min + ", Max: " + max);
+
+        }
+
+        function updateChart(){
+            if (chart) {
+                chart.setData(records);
+            } else {
+                chart = Morris.Bar({
+                    element: 'records',
+                    data: records,
+                    xkey: 'attempt',
+                    ykeys: ['time'],
+                    labels: ['Time'],
+                    hideHover: 'auto',
+                    resize: true
+                });
+            }
+
+
+
+        }
+
+
+
+    })
+
+
+
+
+
+
+
+
+</script>
+
+
+
+
+
+</body>
+</html>
