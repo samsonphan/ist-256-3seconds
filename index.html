@@ -7,6 +7,14 @@
 
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
 
+    <style>
+        td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        }
+    </style>
+
 </head>
 <body>
 
@@ -20,7 +28,31 @@
     <div id="info">
         <p id="infoText">See your attempts here!</p>
     </div>
+    <div id="attemptChart">
+        <table id="attemptTable">
+            <thead>
+                <tr>
+                    <td>
+                        Attempt
+                    </td>
+                    <td>
+                        Start
+                    </td>
+                    <td>
+                        End
+                    </td>
+                </tr>
+            </thead>
+            <tbody id="attemptBody">
+
+            </tbody>
+
+
+
+        </table>
+    </div>
     <div id="records" style="height: 250px;"></div>
+
 
 </div>
 
@@ -57,17 +89,22 @@
 
         let chart = null;
         let average = 0;
+        let startTime;
+
 
         $('#records').toggle();
         $('#info').toggle();
+        $('#attemptChart').toggle();
 
         $("#challenge").on("click", function (event) {
             if ($(this).text() === 'Start') {
+                startTime = new Date();
                 start = new Date().getTime();
                 $(this).text('Stop');
             } else {
                 $(this).text('Start');
                 let elapsedTime = (new Date().getTime() - start) / 1000;
+                let endTime = new Date().getTime();
                 console.log(elapsedTime);
 
                 difference = Math.abs(TIME_CHALLENGE - elapsedTime);
@@ -80,9 +117,7 @@
                 indicator.removeClass('text-danger');
 
 
-                if (difference <= 0.05){
-                    //For the sake of being fair, it is 0.05, since that is reasonably
-                    //close enough while still being challenging.
+                if (difference === 0.00){
                     result = 'text-success';
                     indicator.text("Perfect!");
                 } else if (difference <= 0.2) {
@@ -102,16 +137,13 @@
 
                 records.push({attempt: attemptNum, time: elapsedTime})
                 average = 0;
-                for(i = 0; i < records.length; i++){
-                    average += records[i];
-                    average = average / records.length;
-                }
+
                 updateInfo();
                 updateChart();
+                updateAttempts();
 
             }
 
-            console.log("--------------");
 
 
 
@@ -120,10 +152,18 @@
         $('#toggle-chart-btn').click(function(){
             $('#records').toggle();
             $('#info').toggle();
+            $('#attemptChart').toggle();
+
         });
 
+        function updateAttempts(){
+
+            let end = new Date();
+            let content = "<tr><td>Attempt " + attemptNum + "</td><td>" + startTime + "</td><td>"+ end + "</td></tr>"
+
+            $('#attemptTable').append(content);
+        }
         function updateInfo(){
-            //$('#info').innerHTML =
             let sum = 0;
             let min = Infinity;
             let max = -Infinity;
